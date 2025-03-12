@@ -1,0 +1,5 @@
+name: ViaVersionWarning
+version: '${project.version}'
+main: org.untitled.viaversionwarning.ViaVersionWarning
+api-version: '1.21'
+depend: [ViaVersion]
