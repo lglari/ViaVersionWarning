@@ -1,7 +1,10 @@
 package org.untitled.viaversionwarning;
 
 import com.viaversion.viaversion.api.Via;
+import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,54 +13,78 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class ViaVersionWarning extends JavaPlugin implements Listener {
 
+    private int requiredVersionId;
+    private boolean kickPlayer;
+    private String requiredVersionName;
+
+    private String serverLang;
+
     @Override
     public void onEnable() {
+        saveDefaultConfig();
+        loadSettings();
         Bukkit.getPluginManager().registerEvents(this, this);
+    }
+
+    private void loadSettings() {
+        FileConfiguration config = getConfig();
+        requiredVersionId = config.getInt("required-version", 754);
+        kickPlayer = config.getBoolean("player-kick", false);
+        serverLang = config.getString("lang", "en").toLowerCase();
+
+        ProtocolVersion protocol = ProtocolVersion.getProtocol(requiredVersionId);
+        requiredVersionName = (protocol != null) ? protocol.getName() : "unknown";
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        int version = Via.getAPI().getPlayerVersion(player.getUniqueId());
 
-        if (version < 754) {
-            player.sendTitle("§cВаша версія Minecraft застаріла!",
-                    "§7(Ви граєте на версії " + version + ")",
-                    10, 120, 20);
+        int protocolId = Via.getAPI().getPlayerVersion(player.getUniqueId());
+        ProtocolVersion playerProtocol = ProtocolVersion.getProtocol(protocolId);
+        String playerVersionName = (playerProtocol != null) ? playerProtocol.getName() : "unknown";
+        
+        String lang = serverLang;
 
-            Bukkit.getScheduler().runTaskLater(this, () -> {
-                player.sendTitle("§7Ми настійно §aрекомендуємо",
-                        "§7Перейти на наш сервер з версії §a1.16.5",
-                        10, 120, 20);
-            }, 140L);
+        FileConfiguration config = getConfig();
 
-            Bukkit.getScheduler().runTaskLater(this, () -> {
-                player.sendTitle("§7Використання старих версій майнкрафт",
-                        "§7Може сприяти появі §cбагів§7 та візуальних §cпомилок§7!",
-                        10, 120, 20);
-            }, 280L);
+        if (protocolId < requiredVersionId) {
+            sendTitle(player,
+                    colorize(getMessage(config, lang, "old-version-title")),
+                    colorize(getMessage(config, lang, "old-version-subtitle").replace("%version%", playerVersionName)));
 
-            Bukkit.getScheduler().runTaskLater(this, () -> animateWestWorld(player), 420L);
+            Bukkit.getScheduler().runTaskLater(this, () -> sendTitle(player,
+                    colorize(getMessage(config, lang, "recommend-title")),
+                    colorize(getMessage(config, lang, "recommend-subtitle").replace("%required%", requiredVersionName))
+            ), 140L);
+
+            Bukkit.getScheduler().runTaskLater(this, () -> sendTitle(player,
+                    colorize(getMessage(config, lang, "warning-title")),
+                    colorize(getMessage(config, lang, "warning-subtitle"))
+            ), 280L);
+
+            if (kickPlayer) {
+                Bukkit.getScheduler().runTaskLater(this, () -> player.kickPlayer(
+                        colorize(getMessage(config, lang, "kick-message").replace("%required%", requiredVersionName))
+                ), 420L);
+            }
         }
     }
 
-    private void animateWestWorld(Player player) {
-        String text = "WestWorld";
-        String[] letters = text.split("");
-        StringBuilder builder = new StringBuilder("§e");
-
-        for (int i = 0; i < letters.length; i++) {
-            final int index = i;
-            Bukkit.getScheduler().runTaskLater(this, () -> {
-                builder.append("§6").append(letters[index]);
-                player.sendTitle(builder.toString(), "", 0, 20, 10);
-
-                Bukkit.getScheduler().runTaskLater(this, () -> {
-                    builder.setLength(0);
-                    builder.append("§f").append(text.substring(0, index + 1));
-                    player.sendTitle(builder.toString(), "", 0, 20, 10);
-                }, 5L);
-            }, i * 7L);
+    private String getMessage(FileConfiguration config, String lang, String key) {
+        String path = "lang-messages." + lang + "." + key;
+        String msg = config.getString(path);
+        if (msg == null || msg.isEmpty()) {
+            msg = config.getString("lang-messages.en." + key, "Message missing");
         }
+        return msg;
+    }
+
+    private void sendTitle(Player player, String title, String subtitle) {
+        player.sendTitle(title != null ? title : "", subtitle != null ? subtitle : "", 10, 120, 20);
+    }
+
+    private String colorize(String input) {
+        return ChatColor.translateAlternateColorCodes('&', input);
     }
 }
