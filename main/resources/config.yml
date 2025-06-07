@@ -1,0 +1,34 @@
+required-version: 754 #754 it's mean version minecraft like a Protocol ID version. 754 - 1.16.5 ; 770 - 1.21.5.
+#For more information about protocol ID ver. - https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Protocol_version_numbers
+player-kick: true #should we kick player after warning? true/false
+
+# choose language
+lang: en
+
+lang-messages:
+  en:
+    old-version-title: "&cOld Client Version"
+    old-version-subtitle: "&7You are using %version%"
+    recommend-title: "&aRecommended Version"
+    recommend-subtitle: "&7Please use %required%"
+    warning-title: "&cWarning"
+    warning-subtitle: "&7You may experience bugs or visual glitches!"
+    kick-message: "&cYour Minecraft version is unsupported!\nPlease use %required% or newer."
+
+  uk:
+    old-version-title: "&cСтара версія клієнта"
+    old-version-subtitle: "&7Ви використовуєте %version%"
+    recommend-title: "&aРекомендована версія"
+    recommend-subtitle: "&7Будь ласка, використовуйте %required%"
+    warning-title: "&cУвага"
+    warning-subtitle: "&7Можуть виникати баги або візуальні помилки!"
+    kick-message: "&cВаша версія Minecraft не підтримується!\nБудь ласка, використовуйте %required% або новішу."
+
+  pl:
+    old-version-title: "&cStara wersja klienta"
+    old-version-subtitle: "&7Używasz %version%"
+    recommend-title: "&aZalecana wersja"
+    recommend-subtitle: "&7Proszę używać %required%"
+    warning-title: "&cOstrzeżenie"
+    warning-subtitle: "&7Możesz doświadczyć błędów lub problemów wizualnych!"
+    kick-message: "&cTwoja wersja Minecraft nie jest wspierana!\nProszę używaj %required% lub nowszej."
