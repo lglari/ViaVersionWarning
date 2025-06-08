@@ -10,11 +10,20 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.untitled.viaversionwarning.CMD.ReloadCmd;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ViaVersionWarning extends JavaPlugin implements Listener {
 
     private int requiredVersionId;
     private boolean kickPlayer;
+    private boolean logEnabled; // новое поле
     private String requiredVersionName;
 
     private String serverLang;
@@ -24,12 +33,16 @@ public class ViaVersionWarning extends JavaPlugin implements Listener {
         saveDefaultConfig();
         loadSettings();
         Bukkit.getPluginManager().registerEvents(this, this);
+        getCommand("vwarn").setExecutor(new ReloadCmd(this));
+        //тут проверка обновы короче)))))))))))))))))))))
+        new UpdateChecker(this).checkForUpdates();
     }
 
-    private void loadSettings() {
+    public void loadSettings() {
         FileConfiguration config = getConfig();
         requiredVersionId = config.getInt("required-version", 754);
         kickPlayer = config.getBoolean("player-kick", false);
+        logEnabled = config.getBoolean("log-enabled", true); // считываем параметр логирования
         serverLang = config.getString("lang", "en").toLowerCase();
 
         ProtocolVersion protocol = ProtocolVersion.getProtocol(requiredVersionId);
@@ -43,7 +56,7 @@ public class ViaVersionWarning extends JavaPlugin implements Listener {
         int protocolId = Via.getAPI().getPlayerVersion(player.getUniqueId());
         ProtocolVersion playerProtocol = ProtocolVersion.getProtocol(protocolId);
         String playerVersionName = (playerProtocol != null) ? playerProtocol.getName() : "unknown";
-        
+
         String lang = serverLang;
 
         FileConfiguration config = getConfig();
@@ -68,6 +81,25 @@ public class ViaVersionWarning extends JavaPlugin implements Listener {
                         colorize(getMessage(config, lang, "kick-message").replace("%required%", requiredVersionName))
                 ), 420L);
             }
+        }
+
+        // Логируем вход только если включено в конфиге
+        if (logEnabled) {
+            logPlayerJoin(player, playerVersionName);
+        }
+    }
+
+    private void logPlayerJoin(Player player, String clientVersion) {
+        String dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+        String ip = (player.getAddress() != null) ? player.getAddress().getAddress().getHostAddress() : "unknown";
+        String logLine = String.format("[%s] %s | IP: %s | Version: %s", dateTime, player.getName(), ip, clientVersion);
+
+        File logFile = new File(getDataFolder(), "log.txt");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, true))) {
+            writer.write(logLine);
+            writer.newLine();
+        } catch (IOException e) {
+            getLogger().warning("Failed to write to log.txt: " + e.getMessage());
         }
     }
 
