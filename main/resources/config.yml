@@ -1,6 +1,9 @@
 required-version: 754 #754 it's mean version minecraft like a Protocol ID version. 754 - 1.16.5 ; 770 - 1.21.5.
 #For more information about protocol ID ver. - https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Protocol_version_numbers
 player-kick: true #should we kick player after warning? true/false
+#Logging can help gather statistics about players who join you on the server,
+#however, this feature may load your cores.
+log-enabled: true
 
 # choose language
 lang: en
