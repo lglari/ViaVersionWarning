@@ -23,7 +23,7 @@ public class ViaVersionWarning extends JavaPlugin implements Listener {
 
     private int requiredVersionId;
     private boolean kickPlayer;
-    private boolean logEnabled; // новое поле
+    private boolean logEnabled;
     private String requiredVersionName;
 
     private String serverLang;
@@ -42,7 +42,7 @@ public class ViaVersionWarning extends JavaPlugin implements Listener {
         FileConfiguration config = getConfig();
         requiredVersionId = config.getInt("required-version", 754);
         kickPlayer = config.getBoolean("player-kick", false);
-        logEnabled = config.getBoolean("log-enabled", true); // считываем параметр логирования
+        logEnabled = config.getBoolean("log-enabled", true);
         serverLang = config.getString("lang", "en").toLowerCase();
 
         ProtocolVersion protocol = ProtocolVersion.getProtocol(requiredVersionId);
@@ -83,7 +83,6 @@ public class ViaVersionWarning extends JavaPlugin implements Listener {
             }
         }
 
-        // Логируем вход только если включено в конфиге
         if (logEnabled) {
             logPlayerJoin(player, playerVersionName);
         }
