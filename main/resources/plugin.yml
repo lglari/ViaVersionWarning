@@ -3,3 +3,12 @@ version: '${project.version}'
 main: org.untitled.viaversionwarning.ViaVersionWarning
 api-version: '1.21'
 depend: [ViaVersion]
+commands:
+  vwarn:
+    description: Reload configuration command
+    usage: /vwarn reload
+    permission: vwarn.reload
+permissions:
+  vwarn.reload:
+    description: Allows reloading the plugin
+    default: op
